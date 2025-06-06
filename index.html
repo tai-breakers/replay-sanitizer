@@ -193,8 +193,8 @@
             <p class="subtitle">Replace player names in replay files for privacy</p>
 
             <div v-if="!fileLoaded">
-                <div 
-                    class="upload-area" 
+                <div
+                    class="upload-area"
                     @click="$refs.fileInput.click()"
                     @drop.prevent="handleDrop"
                     @dragover.prevent="dragOver = true"
@@ -206,10 +206,10 @@
                         Drop replay.json here or click to browse
                     </div>
                 </div>
-                <input 
-                    ref="fileInput" 
-                    type="file" 
-                    accept=".json,application/json" 
+                <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".json,application/json"
                     @change="handleFileSelect"
                 >
             </div>
@@ -218,9 +218,9 @@
                 <div class="player-item">
                     <label class="player-label">Runner Player</label>
                     <div class="player-name">{{ originalNames.runner }}</div>
-                    <input 
-                        type="text" 
-                        v-model="replacementNames.runner" 
+                    <input
+                        type="text"
+                        v-model="replacementNames.runner"
                         placeholder="Enter replacement name"
                     >
                 </div>
@@ -228,9 +228,9 @@
                 <div class="player-item">
                     <label class="player-label">Corp Player</label>
                     <div class="player-name">{{ originalNames.corp }}</div>
-                    <input 
-                        type="text" 
-                        v-model="replacementNames.corp" 
+                    <input
+                        type="text"
+                        v-model="replacementNames.corp"
                         placeholder="Enter replacement name"
                     >
                 </div>
@@ -239,8 +239,8 @@
                     <button class="secondary-button" @click="reset">
                         Start Over
                     </button>
-                    <button 
-                        class="primary-button" 
+                    <button
+                        class="primary-button"
                         @click="sanitizeAndDownload"
                         :disabled="!replacementNames.runner || !replacementNames.corp"
                     >
@@ -303,7 +303,7 @@
                     try {
                         const text = await file.text();
                         const data = JSON.parse(text);
-                        
+
                         // Validate it's a replay file
                         if (!data.history || !Array.isArray(data.history) || data.history.length === 0) {
                             setStatus('Invalid replay file format', true);
@@ -335,10 +335,10 @@
 
                     // Deep clone the data
                     const sanitized = JSON.parse(JSON.stringify(replayData.value));
-                    
+
                     // Replace names throughout the structure
                     replaceNamesInObject(sanitized, originalNames.value, replacementNames.value);
-                    
+
                     // Create and download file
                     const blob = new Blob([JSON.stringify(sanitized, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -349,7 +349,7 @@
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    
+
                     setStatus('Download complete!');
                 };
 
@@ -361,7 +361,7 @@
                         result = result.replace(new RegExp(escapeRegExp(original.corp), 'g'), replacement.corp);
                         return result;
                     }
-                    
+
                     if (Array.isArray(obj)) {
                         for (let i = 0; i < obj.length; i++) {
                             obj[i] = replaceNamesInObject(obj[i], original, replacement);
@@ -390,7 +390,7 @@
                         }
                         return result;
                     }
-                    
+
                     return obj;
                 };
 
