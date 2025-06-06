@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netrunner Replay Sanitizer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #00ff00;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #444;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #1a1a1a;
+            margin-bottom: 30px;
+        }
+
+        .upload-area:hover {
+            border-color: #00ff00;
+            background-color: #222;
+        }
+
+        .upload-area.dragover {
+            border-color: #00ff00;
+            background-color: #222;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .upload-text {
+            color: #888;
+            font-size: 16px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .player-section {
+            margin-bottom: 30px;
+        }
+
+        .player-item {
+            margin-bottom: 20px;
+        }
+
+        .player-label {
+            display: block;
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .player-name {
+            color: #00ff00;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ff00;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .primary-button {
+            background-color: #00ff00;
+            color: #1a1a1a;
+        }
+
+        .primary-button:hover {
+            background-color: #00cc00;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+        }
+
+        .primary-button:disabled {
+            background-color: #444;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .secondary-button {
+            background-color: #444;
+            color: #e0e0e0;
+        }
+
+        .secondary-button:hover {
+            background-color: #555;
+            transform: translateY(-1px);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .error {
+            color: #ff4444;
+        }
+
+        .success {
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>Netrunner Replay Sanitizer</h1>
+            <p class="subtitle">Replace player names in replay files for privacy</p>
+
+            <div v-if="!fileLoaded">
+                <div 
+                    class="upload-area" 
+                    @click="$refs.fileInput.click()"
+                    @drop.prevent="handleDrop"
+                    @dragover.prevent="dragOver = true"
+                    @dragleave.prevent="dragOver = false"
+                    :class="{ dragover: dragOver }"
+                >
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        Drop replay.json here or click to browse
+                    </div>
+                </div>
+                <input 
+                    ref="fileInput" 
+                    type="file" 
+                    accept=".json,application/json" 
+                    @change="handleFileSelect"
+                >
+            </div>
+
+            <div v-if="fileLoaded" class="player-section">
+                <div class="player-item">
+                    <label class="player-label">Runner Player</label>
+                    <div class="player-name">{{ originalNames.runner }}</div>
+                    <input 
+                        type="text" 
+                        v-model="replacementNames.runner" 
+                        placeholder="Enter replacement name"
+                    >
+                </div>
+
+                <div class="player-item">
+                    <label class="player-label">Corp Player</label>
+                    <div class="player-name">{{ originalNames.corp }}</div>
+                    <input 
+                        type="text" 
+                        v-model="replacementNames.corp" 
+                        placeholder="Enter replacement name"
+                    >
+                </div>
+
+                <div class="button-group">
+                    <button class="secondary-button" @click="reset">
+                        Start Over
+                    </button>
+                    <button 
+                        class="primary-button" 
+                        @click="sanitizeAndDownload"
+                        :disabled="!replacementNames.runner || !replacementNames.corp"
+                    >
+                        Download Sanitized
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="status" class="status" :class="statusClass">
+                {{ status }}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const fileLoaded = ref(false);
+                const dragOver = ref(false);
+                const status = ref('');
+                const statusClass = ref('');
+                const replayData = ref(null);
+                const originalNames = ref({ runner: '', corp: '' });
+                const replacementNames = ref({ runner: 'Runner', corp: 'Corp' });
+
+                const setStatus = (message, isError = false) => {
+                    status.value = message;
+                    statusClass.value = isError ? 'error' : 'success';
+                    if (!isError) {
+                        setTimeout(() => {
+                            status.value = '';
+                        }, 3000);
+                    }
+                };
+
+                const handleDrop = (e) => {
+                    dragOver.value = false;
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        processFile(files[0]);
+                    }
+                };
+
+                const handleFileSelect = (e) => {
+                    const files = e.target.files;
+                    if (files.length > 0) {
+                        processFile(files[0]);
+                    }
+                };
+
+                const processFile = async (file) => {
+                    if (!file.name.endsWith('.json')) {
+                        setStatus('Please select a JSON file', true);
+                        return;
+                    }
+
+                    try {
+                        const text = await file.text();
+                        const data = JSON.parse(text);
+                        
+                        // Validate it's a replay file
+                        if (!data.history || !Array.isArray(data.history) || data.history.length === 0) {
+                            setStatus('Invalid replay file format', true);
+                            return;
+                        }
+
+                        // Extract player names from history[0]
+                        const firstEntry = data.history[0];
+                        if (!firstEntry.runner?.user?.username || !firstEntry.corp?.user?.username) {
+                            setStatus('Could not find player names in replay', true);
+                            return;
+                        }
+
+                        originalNames.value = {
+                            runner: firstEntry.runner.user.username,
+                            corp: firstEntry.corp.user.username
+                        };
+
+                        replayData.value = data;
+                        fileLoaded.value = true;
+                        setStatus('File loaded successfully');
+                    } catch (error) {
+                        setStatus('Error reading file: ' + error.message, true);
+                    }
+                };
+
+                const sanitizeAndDownload = () => {
+                    if (!replayData.value) return;
+
+                    // Deep clone the data
+                    const sanitized = JSON.parse(JSON.stringify(replayData.value));
+                    
+                    // Replace names throughout the structure
+                    replaceNamesInObject(sanitized, originalNames.value, replacementNames.value);
+                    
+                    // Create and download file
+                    const blob = new Blob([JSON.stringify(sanitized, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'replay-sanitized.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    setStatus('Download complete!');
+                };
+
+                const replaceNamesInObject = (obj, original, replacement) => {
+                    if (typeof obj === 'string') {
+                        // Replace names in strings
+                        let result = obj;
+                        result = result.replace(new RegExp(escapeRegExp(original.runner), 'g'), replacement.runner);
+                        result = result.replace(new RegExp(escapeRegExp(original.corp), 'g'), replacement.corp);
+                        return result;
+                    }
+                    
+                    if (Array.isArray(obj)) {
+                        for (let i = 0; i < obj.length; i++) {
+                            obj[i] = replaceNamesInObject(obj[i], original, replacement);
+                        }
+                    } else if (obj !== null && typeof obj === 'object') {
+                        for (const key in obj) {
+                            if (obj.hasOwnProperty(key)) {
+                                // Special handling for username fields
+                                if (key === 'username' && typeof obj[key] === 'string') {
+                                    if (obj[key] === original.runner) {
+                                        obj[key] = replacement.runner;
+                                    } else if (obj[key] === original.corp) {
+                                        obj[key] = replacement.corp;
+                                    }
+                                } else {
+                                    obj[key] = replaceNamesInObject(obj[key], original, replacement);
+                                }
+                            }
+                        }
+                    }
+                    
+                    return obj;
+                };
+
+                const escapeRegExp = (string) => {
+                    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                };
+
+                const reset = () => {
+                    fileLoaded.value = false;
+                    replayData.value = null;
+                    originalNames.value = { runner: '', corp: '' };
+                    replacementNames.value = { runner: 'Runner', corp: 'Corp' };
+                    status.value = '';
+                };
+
+                return {
+                    fileLoaded,
+                    dragOver,
+                    status,
+                    statusClass,
+                    originalNames,
+                    replacementNames,
+                    handleDrop,
+                    handleFileSelect,
+                    sanitizeAndDownload,
+                    reset
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

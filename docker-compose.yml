@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  replay-sanitizer:
+    build: .
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    volumes:
+      # For development: mount the current directory to enable live reloading
+      - ./index.html:/usr/share/nginx/html/index.html:ro
