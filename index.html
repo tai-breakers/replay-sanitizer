@@ -306,6 +306,7 @@
                 const originalNames = ref({ runner: '', corp: '' });
                 const replacementNames = ref({ runner: 'Runner', corp: 'Corp' });
                 const removePlayerChat = ref(false);
+                const originalFileName = ref('');
 
                 const setStatus = (message, isError = false) => {
                     status.value = message;
@@ -360,12 +361,24 @@
                             corp: firstEntry.corp.user.username
                         };
 
+                        originalFileName.value = file.name;
                         replayData.value = data;
                         fileLoaded.value = true;
                         setStatus('File loaded successfully');
                     } catch (error) {
                         setStatus('Error reading file: ' + error.message, true);
                     }
+                };
+
+                const generateSanitizedFilename = (originalName) => {
+                    // Handle edge case where filename doesn't end with .json
+                    if (!originalName.toLowerCase().endsWith('.json')) {
+                        return originalName + '-sanitized';
+                    }
+
+                    // Remove .json extension, add -sanitized, then add .json back
+                    const nameWithoutExtension = originalName.slice(0, -5);
+                    return nameWithoutExtension + '-sanitized.json';
                 };
 
                 const sanitizeAndDownload = () => {
@@ -387,7 +400,7 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'replay-sanitized.json';
+                    a.download = generateSanitizedFilename(originalFileName.value);
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -499,6 +512,7 @@
                     originalNames.value = { runner: '', corp: '' };
                     replacementNames.value = { runner: 'Runner', corp: 'Corp' };
                     removePlayerChat.value = false;
+                    originalFileName.value = '';
                     status.value = '';
                 };
 
