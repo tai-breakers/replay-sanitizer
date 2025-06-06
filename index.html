@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netrunner Replay Sanitizer</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
     <style>
         * {
             box-sizing: border-box;
@@ -289,7 +292,7 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script>
         const { createApp, ref, computed } = Vue;
 
@@ -421,7 +424,8 @@
                                     } else if (obj[key] === original.corp) {
                                         result[key] = replacement.corp;
                                     } else {
-                                        result[key] = obj[key];
+                                        // Any other username (spectator) becomes "Spectator"
+                                        result[key] = 'Spectator';
                                     }
                                 } else {
                                     result[key] = replaceNamesInObject(obj[key], original, replacement);
