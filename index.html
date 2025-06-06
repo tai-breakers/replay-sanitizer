@@ -367,20 +367,28 @@
                             obj[i] = replaceNamesInObject(obj[i], original, replacement);
                         }
                     } else if (obj !== null && typeof obj === 'object') {
+                        const result = {};
                         for (const key in obj) {
                             if (obj.hasOwnProperty(key)) {
+                                // Skip emailhash fields entirely
+                                if (key === 'emailhash') {
+                                    continue;
+                                }
                                 // Special handling for username fields
                                 if (key === 'username' && typeof obj[key] === 'string') {
                                     if (obj[key] === original.runner) {
-                                        obj[key] = replacement.runner;
+                                        result[key] = replacement.runner;
                                     } else if (obj[key] === original.corp) {
-                                        obj[key] = replacement.corp;
+                                        result[key] = replacement.corp;
+                                    } else {
+                                        result[key] = obj[key];
                                     }
                                 } else {
-                                    obj[key] = replaceNamesInObject(obj[key], original, replacement);
+                                    result[key] = replaceNamesInObject(obj[key], original, replacement);
                                 }
                             }
                         }
+                        return result;
                     }
                     
                     return obj;
