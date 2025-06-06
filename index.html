@@ -184,6 +184,32 @@
         .success {
             color: #00ff00;
         }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: #00ff00;
+        }
+
+        .checkbox-label {
+            font-size: 16px;
+            color: #e0e0e0;
+        }
+
+        .checkbox-hint {
+            font-size: 14px;
+            color: #888;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -235,6 +261,14 @@
                     >
                 </div>
 
+                <div class="player-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" v-model="removePlayerChat">
+                        <span class="checkbox-label">Remove player-to-player chat</span>
+                        <span class="checkbox-hint">(keeps system messages only)</span>
+                    </label>
+                </div>
+
                 <div class="button-group">
                     <button class="secondary-button" @click="reset">
                         Start Over
@@ -268,6 +302,7 @@
                 const replayData = ref(null);
                 const originalNames = ref({ runner: '', corp: '' });
                 const replacementNames = ref({ runner: 'Runner', corp: 'Corp' });
+                const removePlayerChat = ref(false);
 
                 const setStatus = (message, isError = false) => {
                     status.value = message;
@@ -339,6 +374,11 @@
                     // Replace names throughout the structure
                     replaceNamesInObject(sanitized, originalNames.value, replacementNames.value);
 
+                    // Remove player chat if requested
+                    if (removePlayerChat.value) {
+                        removePlayerChatFromObject(sanitized);
+                    }
+
                     // Create and download file
                     const blob = new Blob([JSON.stringify(sanitized, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -398,11 +438,43 @@
                     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 };
 
+                const removePlayerChatFromObject = (obj) => {
+                    if (Array.isArray(obj)) {
+                        for (let i = 0; i < obj.length; i++) {
+                            removePlayerChatFromObject(obj[i]);
+                        }
+                    } else if (obj !== null && typeof obj === 'object') {
+                        for (const key in obj) {
+                            if (obj.hasOwnProperty(key)) {
+                                if (key === 'log' && Array.isArray(obj[key])) {
+                                    // Process log array items, preserving structure
+                                    for (let i = 0; i < obj[key].length; i++) {
+                                        const logItem = obj[key][i];
+                                        // Keep "+" markers and other non-object items
+                                        if (typeof logItem !== 'object' || logItem === null) {
+                                            continue;
+                                        }
+                                        // For log objects, check if it's a player message
+                                        if (logItem.user && typeof logItem.user === 'object') {
+                                            // Replace player message with empty object
+                                            obj[key][i] = {};
+                                        }
+                                        // System messages (user === "__system__") are kept as-is
+                                    }
+                                } else {
+                                    removePlayerChatFromObject(obj[key]);
+                                }
+                            }
+                        }
+                    }
+                };
+
                 const reset = () => {
                     fileLoaded.value = false;
                     replayData.value = null;
                     originalNames.value = { runner: '', corp: '' };
                     replacementNames.value = { runner: 'Runner', corp: 'Corp' };
+                    removePlayerChat.value = false;
                     status.value = '';
                 };
 
@@ -413,6 +485,7 @@
                     statusClass,
                     originalNames,
                     replacementNames,
+                    removePlayerChat,
                     handleDrop,
                     handleFileSelect,
                     sanitizeAndDownload,
