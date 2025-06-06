@@ -2,6 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Overview
+
+This is a Netrunner Replay Sanitizer - a web-based tool for anonymizing player names in Netrunner replay files for privacy purposes.
+
+### Purpose
+The tool allows users to:
+- Upload Netrunner replay JSON files
+- Replace runner and corp player names with custom values
+- Remove email hashes to prevent Gravatar lookups
+- Download sanitized replay files
+
+### Technical Stack
+- **Frontend**: Vue 3 (via CDN)
+- **File Format**: JSON replay files from Netrunner games
+- **Deployment**: Static HTML file that can be served from any web server or opened locally
+
+### Key Features
+- Drag-and-drop file upload
+- Automatic player name extraction from replay files
+- Deep object traversal for comprehensive name replacement
+- Email hash removal for privacy
+- Clean, cyberpunk-themed UI
+
 ## Code Standards
 
 ### Comments
