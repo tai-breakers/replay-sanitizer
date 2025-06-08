@@ -1,6 +1,11 @@
 {
   "releases": [
     {
+      "tag": "v6",
+      "date": "2025-06-08",
+      "note": "Fix Docker multi-platform build and add attribution"
+    },
+    {
       "tag": "v5",
       "date": "2025-06-08",
       "note": "Add changelog display showing recent updates"
