@@ -1,9 +1,9 @@
+# docker-compose.yml file for local development testing
 services:
   replay-sanitizer:
-    build: .
+    image: nginx:alpine
     ports:
       - "8080:80"
-    restart: unless-stopped
     volumes:
-      # For development: mount the current directory to enable live reloading
-      - ./index.html:/usr/share/nginx/html/index.html:ro
+      # Mount the entire directory for development with live reloading
+      - .:/usr/share/nginx/html:ro

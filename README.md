@@ -22,15 +22,16 @@ The Netrunner Replay Sanitizer allows you to upload replay JSON files from Netru
 3. Enter replacement names for the runner and corp players
 4. Click "Download Sanitized" to get your anonymized replay file
 
-## Local Testing with Docker Compose
+## Local Development with Docker Compose
 
-To test the application locally using Docker:
+To run the application locally for development:
 
 ```bash
-# Start the web server
+# Start the web server with live reloading
 docker-compose up
 
 # The application will be available at http://localhost:8080
+# Any changes to index.html, changelog.json, or favicon files will be reflected immediately
 ```
 
 To stop the server:
@@ -38,6 +39,20 @@ To stop the server:
 ```bash
 docker-compose down
 ```
+
+## Building Docker Images
+
+To build a production Docker image, use the provided build script:
+
+```bash
+./build-docker.sh
+```
+
+This script enforces two requirements:
+1. The current commit must be tagged (e.g., `git tag v5`)
+2. The tag must have a corresponding entry in `changelog.json`
+
+If these requirements aren't met, the build will fail with instructions on what needs to be done.
 
 ## Technical Details
 
