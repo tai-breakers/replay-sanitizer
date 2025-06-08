@@ -54,6 +54,17 @@ This script enforces two requirements:
 
 If these requirements aren't met, the build will fail with instructions on what needs to be done.
 
+The script will create two Docker tags:
+- `dagolden/replay-sanitizer:VERSION` (where VERSION is your git tag)
+- `dagolden/replay-sanitizer:latest`
+
+To push the image to Docker Hub after building:
+
+```bash
+docker push dagolden/replay-sanitizer:VERSION
+docker push dagolden/replay-sanitizer:latest
+```
+
 ## Technical Details
 
 - **Frontend**: Vue 3 (loaded via CDN)
@@ -77,4 +88,4 @@ An example replay file is provided in the `example/` directory for testing purpo
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
