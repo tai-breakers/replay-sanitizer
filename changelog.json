@@ -1,6 +1,11 @@
 {
   "releases": [
     {
+      "tag": "v5",
+      "date": "2025-06-08",
+      "note": "Add changelog display showing recent updates"
+    },
+    {
       "tag": "v4",
       "date": "2025-06-06",
       "note": "Use original filename with -sanitized suffix for downloads"
