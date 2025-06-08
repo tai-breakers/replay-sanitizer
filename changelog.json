@@ -1,0 +1,24 @@
+{
+  "releases": [
+    {
+      "tag": "v4",
+      "date": "2025-06-06",
+      "note": "Use original filename with -sanitized suffix for downloads"
+    },
+    {
+      "tag": "v3",
+      "date": "2025-06-06",
+      "note": "Add spectator chat sanitization and favicon support"
+    },
+    {
+      "tag": "v2",
+      "date": "2025-06-06",
+      "note": "Improve chat removal to clean up empty log structures"
+    },
+    {
+      "tag": "v1",
+      "date": "2025-06-06",
+      "note": "Initial release with basic player name sanitization"
+    }
+  ]
+}

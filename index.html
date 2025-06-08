@@ -217,6 +217,39 @@
         [v-cloak] {
             display: none;
         }
+
+        .changelog {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .changelog h3 {
+            color: #4a8a4a;
+            font-size: 14px;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .changelog-item {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .changelog-tag {
+            color: #4a8a4a;
+            font-family: monospace;
+            font-size: 12px;
+            min-width: 40px;
+        }
+
+        .changelog-note {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -245,6 +278,14 @@
                     accept=".json,application/json"
                     @change="handleFileSelect"
                 >
+
+                <div v-if="changelog.length > 0" class="changelog">
+                    <h3>What's new?</h3>
+                    <div v-for="release in changelog" :key="release.tag" class="changelog-item">
+                        <span class="changelog-tag">{{ release.tag }}</span>
+                        <span class="changelog-note">{{ release.note }}</span>
+                    </div>
+                </div>
             </div>
 
             <div v-if="fileLoaded" class="player-section">
@@ -311,6 +352,7 @@
                 const replacementNames = ref({ runner: 'Runner', corp: 'Corp' });
                 const removePlayerChat = ref(false);
                 const originalFileName = ref('');
+                const changelog = ref([]);
 
                 const setStatus = (message, isError = false) => {
                     status.value = message;
@@ -520,6 +562,22 @@
                     status.value = '';
                 };
 
+                // Load changelog on mount
+                const loadChangelog = async () => {
+                    try {
+                        const response = await fetch('changelog.json');
+                        if (response.ok) {
+                            const data = await response.json();
+                            // Get only the 3 most recent releases
+                            changelog.value = data.releases.slice(0, 3);
+                        }
+                    } catch (error) {
+                        console.error('Failed to load changelog:', error);
+                    }
+                };
+
+                loadChangelog();
+
                 return {
                     fileLoaded,
                     dragOver,
@@ -531,7 +589,8 @@
                     handleDrop,
                     handleFileSelect,
                     sanitizeAndDownload,
-                    reset
+                    reset,
+                    changelog
                 };
             }
         }).mount('#app');
