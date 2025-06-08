@@ -213,10 +213,14 @@
             color: #888;
             margin-left: 5px;
         }
+
+        [v-cloak] {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div id="app">
+    <div id="app" v-cloak>
         <div class="container">
             <h1>Netrunner Replay Sanitizer</h1>
             <p class="subtitle">Replace player names in replay files for privacy</p>
