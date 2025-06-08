@@ -41,7 +41,7 @@ fi
 
 # Build the Docker image
 echo -e "${GREEN}Building Docker image for $CURRENT_TAG...${NC}"
-docker build -t dagolden/replay-sanitizer:$CURRENT_TAG -t dagolden/replay-sanitizer:latest .
+docker buildx build --platform linux/amd64 -t dagolden/replay-sanitizer:$CURRENT_TAG -t dagolden/replay-sanitizer:latest .
 
 echo -e "${GREEN}✓ Docker image built successfully${NC}"
 echo "Tagged as:"
